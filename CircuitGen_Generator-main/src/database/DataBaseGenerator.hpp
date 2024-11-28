@@ -12,6 +12,9 @@
 
 #include "DataBaseGeneratorParameters.hpp"
 
+#include <generators/simple/SimpleGeneratorBase.hpp>
+#include <generators/GeneratorBase.hpp>
+
 using ResultGraph = std::pair<std::string, std::vector<GraphPtr>>;
 using ResultPath  = std::pair<std::string, std::vector<std::string>>;
 
@@ -225,7 +228,27 @@ private:
       const GenerationTypes i_methodType
   );
 
-  void                    addDataToReturn(GraphPtr graph);
+  void addDataToReturn(GraphPtr graph);
+
+  void circuitGeneration(
+      const GraphPtr& graph,
+      const GenerationParameters&  i_param
+  );
+
+  void circuitGeneration(
+      const std::vector<GraphPtr>& graphs,
+      const GenerationParameters& i_param
+  );
+
+  void circuitGeneration(
+      const GeneratorBase&        generator,
+      const GenerationParameters& i_param
+  );
+
+  void circuitGeneration(
+      const SimpleGeneratorBase&  generator,
+      const GenerationParameters& i_param
+  );
 
   RandomGeneratorWithSeed d_randGenerator;
 

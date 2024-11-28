@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <climits>
 #include <vector>
 
 #include "DataBaseGenerator.hpp"
@@ -11,13 +12,24 @@
 #include <additional/AuxiliaryMethods.hpp>
 #include <additional/filesTools/FilesTools.hpp>
 #include <baseStructures/Parser.hpp>
-#include <baseStructures/truthTable/TruthTable.hpp>
 #include <circuit/Circuit.hpp>
 #include <circuit/CircuitParameters.hpp>
 #include <CircuitGenGenerator/ThreadPool.hpp>
-#include <generators/Genetic/GeneticParameters.hpp>
-#include <generators/Genetic/GenGenerator.hpp>
-#include <generators/simple/SimpleGenerators.hpp>
+#include <generators/simple/RandLevelGenerator.hpp>
+#include <generators/simple/RandLevelExperimentalGenerator.hpp>
+#include <generators/TruthTable/RandomTruthTableGenerator.hpp>
+#include <generators/simple/NumOperationsGenerator.hpp>
+#include <generators/simple/SummatorGenerator.hpp>
+#include <generators/simple/ComparisonGenerator.hpp>
+#include <generators/simple/EncoderGenerator.hpp>
+#include <generators/simple/ParityGenerator.hpp>
+#include <generators/simple/SubtractorGenerator.hpp>
+#include <generators/simple/MultiplexerGenerator.hpp>
+#include <generators/simple/DemultiplexerGenerator.hpp>
+#include <generators/simple/MultiplierGenerator.hpp>
+#include <generators/simple/DecoderGenerator.hpp>
+#include <generators/simple/ALUGenerator.hpp>
+#include <generators/Genetic/GeneticTruthTableGenerator.hpp>
 
 using namespace std::chrono;
 using namespace Threading;
@@ -72,7 +84,7 @@ void DataBaseGenerator::runGeneratorByDefault(
   auto randGeneratorLambda = [&]() {
     return d_randGenerator.getRandInt(0, INT_MAX);
   };
-  // we create int sequence, which would give us diffetent seeds for each repeat
+  // we create int sequence, which would give us different seeds for each repeat
   std::generate(seeds.begin(), seeds.end(), randGeneratorLambda);
 
   ThreadPool pool(parallel);
@@ -173,69 +185,13 @@ void DataBaseGenerator::addDataToReturn(GraphPtr graph) {
   d_resWrite.unlock();
 }
 
-void DataBaseGenerator::generateDataBaseFromRandomTruthTable(
+void DataBaseGenerator::circuitGeneration(
+    const GraphPtr&             graph,
     const GenerationParameters& i_param
 ) {
-  TruthTable       tt(i_param.getInputs(), i_param.getOutputs(), 0.0);
-
-  SimpleGenerators tftt(i_param.getSeed());
-  tftt.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  std::vector<GraphPtr> allGraphs;
-
-  GraphPtr              graph;
-  if (i_param.getZhegalkin().getZhegalkin()) {
-    graph = tftt.zhegalkinFromTruthTable(tt);
-    graph->setName(i_param.getName() + "_" + "Zhegalkin");
-
-    allGraphs.push_back(graph);
-  }
-  if (i_param.getCNF().getCNFF()) {
-    graph = tftt.cnfFromTruthTable(tt, !i_param.getCNF().getCNFF());
-    graph->setName(i_param.getName() + "_" + "CNFF");
-
-    allGraphs.push_back(graph);
-  }
-  if (i_param.getCNF().getCNFT()) {
-    graph = tftt.cnfFromTruthTable(tt, i_param.getCNF().getCNFT());
-    graph->setName(i_param.getName() + "_" + "CNFT");
-
-    allGraphs.push_back(graph);
-  }
-
-  for (auto curGraph : allGraphs) {
-    Circuit c(curGraph);
-    c.setTable(tt);
-    c.setPath(d_mainPath);
-    c.setCircuitName(curGraph->getName());
-    c.generate(
-        i_param.getMakeGraphMLClassic(),
-        i_param.getMakeGraphMLPseudoABCD(),
-        i_param.getMakeGraphMLOpenABCD()
-    );
-
-    addDataToReturn(curGraph);
-  }
-}
-
-void DataBaseGenerator::generateDataBaseRandLevel(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators generator(i_param.getSeed());
-  generator.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  GraphPtr graph = generator.generatorRandLevel(
-      i_param.getRandLevel().getMinLevel(),
-      i_param.getRandLevel().getMaxLevel(),
-      i_param.getRandLevel().getMinElements(),
-      i_param.getRandLevel().getMaxElements(),
-      i_param.getInputs(),
-      i_param.getOutputs()
-  );
-
   Circuit c(graph);
   c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
+  c.setCircuitName(graph->getName());
   c.generate(
       i_param.getMakeGraphMLClassic(),
       i_param.getMakeGraphMLPseudoABCD(),
@@ -245,333 +201,104 @@ void DataBaseGenerator::generateDataBaseRandLevel(
   addDataToReturn(graph);
 }
 
-void DataBaseGenerator::generateDataBaseRandLevelExperimental(
-    const GenerationParameters& i_param
+void DataBaseGenerator::circuitGeneration(
+    const std::vector<GraphPtr>& graphs,
+    const GenerationParameters&  i_param
 ) {
-  SimpleGenerators generator(i_param.getSeed());
-  generator.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  auto     start = high_resolution_clock::now();
-  GraphPtr graph = generator.generatorRandLevelExperimental(
-      i_param.getRandLevel().getMinLevel(),
-      i_param.getRandLevel().getMaxLevel(),
-      i_param.getRandLevel().getMinElements(),
-      i_param.getRandLevel().getMaxElements(),
-      i_param.getInputs(),
-      i_param.getOutputs()
-  );
-
-  auto    stop     = high_resolution_clock::now();
-  auto    duration = duration_cast<microseconds>(stop - start);
-  // std::clog << "Time taken on experimental: " << duration.count()
-  //           << " microseconds" << std::endl;
-
-  // std::clog << "Update started\n";
-  Circuit c(graph);
-  // std::clog << "Update ended\n";
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
-}
-
-void DataBaseGenerator::generateDataBaseNumOperations(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators generator(i_param.getSeed());
-  generator.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  std::vector<std::pair<std::string, GraphPtr>> circs;
-  circs.push_back(
-      {"NumOperation",
-       generator.generatorNumOperation(
-           i_param.getInputs(),
-           i_param.getOutputs(),
-           i_param.getNumOperations().getLogicOpers(),
-           i_param.getNumOperations().getLeaveEmptyOut()
-       )}
-  );
-
-  for (auto [name, graph] : circs) {
-    Circuit c(graph);
-    c.setPath(d_mainPath);
-    c.setCircuitName(i_param.getName());
-    c.generate(
-        i_param.getMakeGraphMLClassic(),
-        i_param.getMakeGraphMLPseudoABCD(),
-        i_param.getMakeGraphMLOpenABCD()
-    );
-
-    addDataToReturn(graph);
-  }
-}
-
-void DataBaseGenerator::generateDataBaseGenetic(
-    const GenerationParameters& i_param
-) {
-  GeneticGenerator<TruthTable, TruthTableParameters> gg(
-      GeneticParameters(i_param.getGenetic()),
-      {i_param.getInputs(), i_param.getOutputs()},
-      d_mainPath,
-      i_param.getName()
-  );
-
-  const auto& population = gg.generate();
-  auto        graphs     = gg.getGraphsFromPopulation(population);
-
   for (auto graph : graphs) {
-    Circuit c(graph);
-    c.setPath(d_mainPath);
-    c.setCircuitName(graph->getName());
-    c.generate(
-        i_param.getMakeGraphMLClassic(),
-        i_param.getMakeGraphMLPseudoABCD(),
-        i_param.getMakeGraphMLOpenABCD()
-    );
-
-    addDataToReturn(graph);
+    circuitGeneration(graph, i_param);
   }
 }
 
-void DataBaseGenerator::generateDataBaseSummator(
+void DataBaseGenerator::circuitGeneration(
+    const GeneratorBase&        generator,
     const GenerationParameters& i_param
 ) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  bits        = i_param.getInputs();
-  bool     overflowIn  = i_param.getSummator().getOverFlowIn();
-  bool     overflowOut = i_param.getSummator().getOverFlowOut();
-  bool     minus       = i_param.getSummator().getMinus();
-  GraphPtr graph = sg.generatorSummator(bits, overflowIn, overflowOut, minus);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+  circuitGeneration(generator.generate(), i_param);
 }
 
-void DataBaseGenerator::generateDataBaseComparison(
+void DataBaseGenerator::circuitGeneration(
+    const SimpleGeneratorBase&  generator,
     const GenerationParameters& i_param
 ) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  i_bits   = i_param.getInputs();
-  bool     compare0 = i_param.getComparison().getCompare0();
-  bool     compare1 = i_param.getComparison().getCompare1();
-  bool     compare2 = i_param.getComparison().getCompare2();
-  GraphPtr graph = sg.generatorComparison(i_bits, compare0, compare1, compare2);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+  auto graph = generator.generate();
+  graph->setName(i_param.getName());
+  circuitGeneration(graph, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseEncoder(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  i_bits = i_param.getInputs();
-  GraphPtr graph  = sg.generatorEncoder(i_bits);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseFromRandomTruthTable(const GenerationParameters& i_param) {
+  RandomTruthTableGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseParity(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  bits  = i_param.getInputs();
-  GraphPtr graph = sg.generatorParity(bits);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseRandLevel(const GenerationParameters& i_param) {
+  RandLevelGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseSubtractor(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  GraphPtr graph = sg.generatorSubtractor(
-      i_param.getInputs(),
-      i_param.getSubtractor().getOverFlowIn(),
-      i_param.getSubtractor().getOverFlowOut(),
-      i_param.getSubtractor().getSub()
-  );
-  Circuit c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseRandLevelExperimental(const GenerationParameters& i_param) {
+  RandLevelExperimentalGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseMultiplexer(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  i_bits = i_param.getInputs();
-  GraphPtr graph  = sg.generatorMultiplexer(i_bits);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseNumOperations(const GenerationParameters& i_param) {
+  NumOperationsGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseDemultiplexer(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  int32_t  i_bits = i_param.getOutputs();
-  GraphPtr graph  = sg.generatorDemultiplexer(i_bits);
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseGenetic(const GenerationParameters& i_param) {
+  GeneticTruthTableGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseMultiplier(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  GraphPtr graph = sg.generatorMultiplier(i_param.getInputs());
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseSummator(const GenerationParameters& i_param) {
+  SummatorGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseDecoder(
-    const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
-
-  GraphPtr graph = sg.generatorDecoder(i_param.getInputs());
-  Circuit  c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
-
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseComparison(const GenerationParameters& i_param) {
+  ComparisonGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
-void DataBaseGenerator::generateDataBaseALU(const GenerationParameters& i_param
-) {
-  SimpleGenerators sg(i_param.getSeed());
-  sg.setGatesInputsInfo(i_param.getGatesInputsInfo());
+void DataBaseGenerator::generateDataBaseEncoder(const GenerationParameters& i_param) {
+  EncoderGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
 
-  GraphPtr graph = sg.generatorALU(
-      i_param.getInputs(),
-      i_param.getOutputs(),
-      i_param.getALU().getALL(),
-      i_param.getALU().getSUM(),
-      i_param.getALU().getSUB(),
-      i_param.getALU().getNSUM(),
-      i_param.getALU().getNSUB(),
-      i_param.getALU().getMULT(),
-      i_param.getALU().getCOM(),
-      i_param.getALU().getAND(),
-      i_param.getALU().getNAND(),
-      i_param.getALU().getOR(),
-      i_param.getALU().getNOR(),
-      i_param.getALU().getXOR(),
-      i_param.getALU().getXNOR(),
-      i_param.getALU().getCNF(),
-      i_param.getALU().getRNL(),
-      i_param.getALU().getNUMOP(),
-      i_param.getALU().getminLevel(),
-      i_param.getALU().getmaxLevel(),
-      i_param.getALU().getminElement(),
-      i_param.getALU().getmaxElement(),
-      i_param.getALU().getm(),
-      i_param.getALU().getLeaveEmptyOut()
-  );
-  LOG(INFO) << "Generation ALU complete!";
-  Circuit c(graph);
-  c.setPath(d_mainPath);
-  c.setCircuitName(i_param.getName());
-  LOG(INFO) << "Start circuit generation!";
-  c.generate(
-      i_param.getMakeGraphMLClassic(),
-      i_param.getMakeGraphMLPseudoABCD(),
-      i_param.getMakeGraphMLOpenABCD()
-  );
+void DataBaseGenerator::generateDataBaseParity(const GenerationParameters& i_param) {
+  ParityGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
 
-  LOG(INFO) << "Full ALU complete!";
+void DataBaseGenerator::generateDataBaseSubtractor(const GenerationParameters& i_param) {
+  SubtractorGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
 
-  addDataToReturn(graph);
+void DataBaseGenerator::generateDataBaseMultiplexer(const GenerationParameters& i_param) {
+  MultiplexerGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
+
+void DataBaseGenerator::generateDataBaseDemultiplexer(const GenerationParameters& i_param) {
+  DemultiplexerGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
+
+void DataBaseGenerator::generateDataBaseMultiplier(const GenerationParameters& i_param) {
+  MultiplierGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
+
+void DataBaseGenerator::generateDataBaseDecoder(const GenerationParameters& i_param) {
+  DecoderGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
+}
+
+void DataBaseGenerator::generateDataBaseALU(const GenerationParameters& i_param) {
+  ALUGenerator generator(i_param);
+  circuitGeneration(generator, i_param);
 }
 
 // maybe this method should be rewritten using map with GenerationTypes and

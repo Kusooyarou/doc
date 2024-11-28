@@ -44,13 +44,13 @@ public:
   GeneticGenerator(
       const ParametersType&       i_parameters,
       std::pair<int32_t, int32_t> i_inout,
-      const std::string&          i_mainPath,
+      //const std::string&          i_mainPath,
       const std::string&          i_name
   ) :
     d_parameters(i_parameters),
     d_inputs(i_inout.first),
     d_outputs(i_inout.second),
-    d_mainPath(i_mainPath),
+    //d_mainPath(i_mainPath),
     d_name(i_name) {
     d_parameters.setInputs(d_inputs);
     d_parameters.setOutputs(d_outputs);
@@ -121,10 +121,11 @@ private:
   std::vector<ChromosomeType<Type, ParametersType>> d_population;
   std::shared_ptr<Settings> d_settings = Settings::getInstance("GraphVertex");
   ParametersType            d_parameters;
-  std::string               d_mainPath;
+  //std::string               d_mainPath;
   std::string               d_name;
   const GenerationTypes     d_generationType = Genetic;
 
+  #if FALSE
   void                      savePopulation(
                            const std::vector<ChromosomeType<Type, ParametersType>>& i_population
                        ) {
@@ -137,6 +138,7 @@ private:
       c.generate();
     }
   }
+  #endif
 
   /// @brief createPopulation
   /// Creates the initial genetic population

@@ -8,6 +8,39 @@
 #include <generators/Genetic/GeneticParameters.hpp>
 #include <settings/Settings.hpp>
 
+class GeneratorBaseParameters {
+public:
+  uint32_t getInputs() const { return d_inputs; }
+
+  void     setInputs(uint32_t i_inputs) { d_inputs = i_inputs; }
+
+  uint32_t getOutputs() const { return d_outputs; }
+
+  void     setOutputs(uint32_t i_outputs) { d_outputs = i_outputs; }
+
+  std::uint_fast32_t getSeed() const { return d_seed; }
+
+  void               setSeed(std::uint_fast32_t i_seed) { d_seed = i_seed; }
+
+  std::map<std::string, std::vector<int32_t>> getGatesInputsInfo() const {
+    return d_gatesInputsInfo;
+  }
+
+  void setGatesInputInfo(
+      const std::map<std::string, std::vector<int32_t>>& i_gatesInputsInfo
+  ) {
+    d_gatesInputsInfo = i_gatesInputsInfo;
+  }
+
+private:
+  uint32_t                                    d_inputs    = 0;
+  uint32_t                                    d_outputs   = 0;
+
+  std::map<std::string, std::vector<int32_t>> d_gatesInputsInfo;
+
+  std::uint_fast32_t                          d_seed = 0;
+};
+
 /// class CNNFromTruthTableParameters
 /// @param d_generateLimitations It may refer to conditions or restrictions that
 /// can be applied to combinational logic, for example, imposing restrictions on
@@ -150,7 +183,7 @@ public:
 /// */
 
 /// @todo: Desc class
-class GeneratorComparisonParameters {
+class GeneratorComparisonParameters {// : public GeneratorBaseParameters {
 public:
   bool d_compare0 = false;
   bool d_compare1 = false;
