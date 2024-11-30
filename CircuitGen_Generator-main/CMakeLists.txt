@@ -98,6 +98,17 @@ set(SOURCES
   src/generators/DbGenerators/simple/ALUGenerator.cpp
   src/generators/DbGenerators/GeneticTruthTableGenerator.cpp
   src/generators/DbGenerators/TruthTable/RandomTruthTableGenerator.cpp
+
+  src/generators/simple/SimpleGenerator.cpp
+  src/generators/simple/ArithmeticGenerator.cpp
+  src/generators/simple/FromTruthTableGenerator.cpp
+  src/generators/simple/CoderGenerator.cpp
+  src/generators/simple/RandLevelGenerator.cpp
+  src/generators/simple/PlexerGenerator.cpp
+  src/generators/simple/ALUGenerator.cpp
+  src/generators/simple/ComparisonGenerator.cpp
+  src/generators/simple/NumOperationsGenerator.cpp
+  src/generators/simple/ParityGenerator.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" 
