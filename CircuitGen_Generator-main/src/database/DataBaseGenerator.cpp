@@ -15,21 +15,21 @@
 #include <circuit/Circuit.hpp>
 #include <circuit/CircuitParameters.hpp>
 #include <CircuitGenGenerator/ThreadPool.hpp>
-#include <generators/simple/RandLevelGenerator.hpp>
-#include <generators/simple/RandLevelExperimentalGenerator.hpp>
-#include <generators/TruthTable/RandomTruthTableGenerator.hpp>
-#include <generators/simple/NumOperationsGenerator.hpp>
-#include <generators/simple/SummatorGenerator.hpp>
-#include <generators/simple/ComparisonGenerator.hpp>
-#include <generators/simple/EncoderGenerator.hpp>
-#include <generators/simple/ParityGenerator.hpp>
-#include <generators/simple/SubtractorGenerator.hpp>
-#include <generators/simple/MultiplexerGenerator.hpp>
-#include <generators/simple/DemultiplexerGenerator.hpp>
-#include <generators/simple/MultiplierGenerator.hpp>
-#include <generators/simple/DecoderGenerator.hpp>
-#include <generators/simple/ALUGenerator.hpp>
-#include <generators/Genetic/GeneticTruthTableGenerator.hpp>
+#include <generators/DbGenerators/simple/RandLevelGenerator.hpp>
+#include <generators/DbGenerators/simple/RandLevelExperimentalGenerator.hpp>
+#include <generators/DbGenerators/TruthTable/RandomTruthTableGenerator.hpp>
+#include <generators/DbGenerators/simple/NumOperationsGenerator.hpp>
+#include <generators/DbGenerators/simple/SummatorGenerator.hpp>
+#include <generators/DbGenerators/simple/ComparisonGenerator.hpp>
+#include <generators/DbGenerators/simple/EncoderGenerator.hpp>
+#include <generators/DbGenerators/simple/ParityGenerator.hpp>
+#include <generators/DbGenerators/simple/SubtractorGenerator.hpp>
+#include <generators/DbGenerators/simple/MultiplexerGenerator.hpp>
+#include <generators/DbGenerators/simple/DemultiplexerGenerator.hpp>
+#include <generators/DbGenerators/simple/MultiplierGenerator.hpp>
+#include <generators/DbGenerators/simple/DecoderGenerator.hpp>
+#include <generators/DbGenerators/simple/ALUGenerator.hpp>
+#include <generators/DbGenerators/GeneticTruthTableGenerator.hpp>
 
 using namespace std::chrono;
 using namespace Threading;

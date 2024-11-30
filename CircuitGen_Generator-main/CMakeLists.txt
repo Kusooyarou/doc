@@ -81,23 +81,23 @@ set(SOURCES
   src/generators/Genetic/Mutations/MutationParameters.cpp
   src/generators/Genetic/Mutations/MutationTruthTable.cpp
   src/settings/Settings.cpp
-  src/generators/GeneratorBase.cpp
-  src/generators/simple/SimpleGeneratorBase.cpp
-  src/generators/simple/RandLevelGenerator.cpp
-  src/generators/simple/RandLevelExperimentalGenerator.cpp
-  src/generators/simple/NumOperationsGenerator.cpp
-  src/generators/simple/SummatorGenerator.cpp
-  src/generators/simple/ComparisonGenerator.cpp
-  src/generators/simple/EncoderGenerator.cpp
-  src/generators/simple/ParityGenerator.cpp
-  src/generators/simple/SubtractorGenerator.cpp
-  src/generators/simple/MultiplexerGenerator.cpp
-  src/generators/simple/DemultiplexerGenerator.cpp
-  src/generators/simple/MultiplierGenerator.cpp
-  src/generators/simple/DecoderGenerator.cpp
-  src/generators/simple/ALUGenerator.cpp
-  src/generators/Genetic/GeneticTruthTableGenerator.cpp
-  src/generators/TruthTable/RandomTruthTableGenerator.cpp
+  src/generators/DbGenerators/GeneratorBase.cpp
+  src/generators/DbGenerators/SimpleGeneratorBase.cpp
+  src/generators/DbGenerators/simple/RandLevelGenerator.cpp
+  src/generators/DbGenerators/simple/RandLevelExperimentalGenerator.cpp
+  src/generators/DbGenerators/simple/NumOperationsGenerator.cpp
+  src/generators/DbGenerators/simple/SummatorGenerator.cpp
+  src/generators/DbGenerators/simple/ComparisonGenerator.cpp
+  src/generators/DbGenerators/simple/EncoderGenerator.cpp
+  src/generators/DbGenerators/simple/ParityGenerator.cpp
+  src/generators/DbGenerators/simple/SubtractorGenerator.cpp
+  src/generators/DbGenerators/simple/MultiplexerGenerator.cpp
+  src/generators/DbGenerators/simple/DemultiplexerGenerator.cpp
+  src/generators/DbGenerators/simple/MultiplierGenerator.cpp
+  src/generators/DbGenerators/simple/DecoderGenerator.cpp
+  src/generators/DbGenerators/simple/ALUGenerator.cpp
+  src/generators/DbGenerators/GeneticTruthTableGenerator.cpp
+  src/generators/DbGenerators/TruthTable/RandomTruthTableGenerator.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" 

@@ -12,8 +12,10 @@
 
 #include "DataBaseGeneratorParameters.hpp"
 
-#include <generators/simple/SimpleGeneratorBase.hpp>
-#include <generators/GeneratorBase.hpp>
+#include <generators/DbGenerators/SimpleGeneratorBase.hpp>
+#include <generators/DbGenerators/GeneratorBase.hpp>
+
+using namespace DbGenerators;
 
 using ResultGraph = std::pair<std::string, std::vector<GraphPtr>>;
 using ResultPath  = std::pair<std::string, std::vector<std::string>>;
