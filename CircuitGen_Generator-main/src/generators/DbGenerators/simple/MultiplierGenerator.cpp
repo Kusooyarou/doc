@@ -1,5 +1,5 @@
 #include "MultiplierGenerator.hpp"
-#include <generators/simple/SimpleGenerators.hpp>
+#include <generators/simple/ArithmeticGenerator.hpp>
 
 namespace DbGenerators {
 
@@ -9,8 +9,7 @@ MultiplierGenerator::MultiplierGenerator(const GenerationParameters& i_param) :
 GraphPtr MultiplierGenerator::generate() const {
   auto             param = getParameters();
 
-  SimpleGenerators sg(param.getSeed());
-  sg.setGatesInputsInfo(param.getGatesInputsInfo());
+  ArithmeticGenerator sg(param);
 
   return sg.generatorMultiplier(param.getInputs());
 }

@@ -1,5 +1,5 @@
 #include "SummatorGenerator.hpp"
-#include <generators/simple/SimpleGenerators.hpp>
+#include <generators/simple/ArithmeticGenerator.hpp>
 
 namespace DbGenerators {
 
@@ -9,8 +9,7 @@ SummatorGenerator::SummatorGenerator(const GenerationParameters& i_param) :
 GraphPtr SummatorGenerator::generate() const {
   auto             param = getParameters();
 
-  SimpleGenerators sg(param.getSeed());
-  sg.setGatesInputsInfo(param.getGatesInputsInfo());
+  ArithmeticGenerator sg(param);
 
   int32_t bits        = param.getInputs();
   bool    overflowIn  = param.getSummator().getOverFlowIn();

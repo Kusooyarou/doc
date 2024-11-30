@@ -1,5 +1,5 @@
 #include "DemultiplexerGenerator.hpp"
-#include <generators/simple/SimpleGenerators.hpp>
+#include <generators/simple/PlexerGenerator.hpp>
 
 namespace DbGenerators {
 
@@ -11,8 +11,7 @@ DemultiplexerGenerator::DemultiplexerGenerator(
 GraphPtr DemultiplexerGenerator::generate() const {
   auto             param = getParameters();
 
-  SimpleGenerators sg(param.getSeed());
-  sg.setGatesInputsInfo(param.getGatesInputsInfo());
+  PlexerGenerator  sg(param);
 
   int32_t i_bits = param.getOutputs();
   return sg.generatorDemultiplexer(i_bits);

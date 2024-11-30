@@ -1,5 +1,5 @@
 #include "DecoderGenerator.hpp"
-#include <generators/simple/SimpleGenerators.hpp>
+#include <generators/simple/CoderGenerator.hpp>
 
 namespace DbGenerators {
 
@@ -9,8 +9,7 @@ DecoderGenerator::DecoderGenerator(const GenerationParameters& i_param) :
 GraphPtr DecoderGenerator::generate() const {
   auto             param = getParameters();
 
-  SimpleGenerators sg(param.getSeed());
-  sg.setGatesInputsInfo(param.getGatesInputsInfo());
+  CoderGenerator   sg(param);
 
   return sg.generatorDecoder(param.getInputs());
 }
